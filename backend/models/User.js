@@ -1,4 +1,9 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const e = require("express");
+const jwt = require("jsonwebtoken");
+const saltRounds = 10;
+const SECRET_KEY = "SOMETAkdjfhgkjfdhgkjfdghk";
 
 const userSchema = mongoose.Schema({
   email: {
@@ -14,23 +19,7 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
     select: false,
-    minLength: [6, "Password must be atleast 6 characters long"],
-    validate: {
-      validator: function (v) {
-        return /^(?=.*\d)[a-zA-Z\d]{6,13}$/.test(v);
-        /*
-        for (let c of v) {
-          if (!isNaN(c)) {
-            return true;
-          }
-        }
-        return false;
-        */
-      },
-      message: function (props) {
-        return "Password should atleast have one number";
-      },
-    },
+    //minLength: [6, "Password must be atleast 6 characters long"],
   },
   name: { type: String, required: true },
   firstname: { type: String, required: true },
@@ -48,10 +37,33 @@ userSchema.statics.findActiveById = function (id) {
   return this.find({ _id: id, active: true });
 };
 
-userSchema.methods.saveCustom = function () {
+userSchema.methods.signUp = async function () {
   let user = this;
   user.name = user.firstname + " " + user.lastname;
+  user.password = await bcrypt.hash(user.password, saltRounds);
   return user.save();
+};
+
+userSchema.statics.signIn = async function (email, password) {
+  const user = await User.findOne({ email: email }, [
+    "email",
+    "name",
+    "password",
+  ]);
+
+  if (user) {
+    const result = await bcrypt.compare(password, user.password);
+    if (result === true) {
+      const token = jwt.sign({ email: user.email }, SECRET_KEY, {
+        expiresIn: "1h",
+      });
+      return { email: user.email, name: user.name, token: token };
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
 };
 
 const User = mongoose.model("User", userSchema);

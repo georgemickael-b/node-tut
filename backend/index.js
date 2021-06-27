@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 var bodyParser = require("body-parser");
 const axios = require("axios");
-
+const logger = require("./middleware/logger");
 const todosRouter = require("./routes/todos");
 const weatherRouter = require("./routes/weather");
 const usersRoute = require("./routes/users");
@@ -22,6 +22,7 @@ mongoose.connect(
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
+app.use(logger);
 
 app.use("/todos", todosRouter);
 app.use("/weather", weatherRouter);

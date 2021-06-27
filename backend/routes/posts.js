@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const Post = require("../models/Post");
+const auth = require("../middleware/auth");
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const data = req.body;
   const post = new Post({
     text: data.text,
-    author: data.author, // This will change
+    author: req.user._id,
   });
 
   try {
@@ -17,11 +18,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    //const posts = await Post.find().populate("author", "name");
-    //const posts = await Post.find().populate("author", ["name", "email"]);
-    //const posts = await Post.find().populate("author", "-password");
     const posts = await Post.find().populate("author", ["name", "email"]);
     res.status(200).send(posts);
   } catch (err) {

@@ -2,6 +2,21 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 
+router.post("/signin", async (req, res) => {
+  const data = req.body;
+  try {
+    const signedInUser = await User.signIn(data.email, data.password);
+    if (!!signedInUser) {
+      res.status(200).send(signedInUser);
+    } else {
+      res.status(403).send({ errorMessage: "Invalid credentials" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err);
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const users = await User.findActive();
@@ -26,6 +41,7 @@ router.get("/:userId", async (req, res) => {
 router.post("/", async (req, res) => {
   // email , password, firstname , last, age
   const data = req.body;
+
   const user = new User({
     email: data.email,
     password: data.password,
@@ -36,8 +52,8 @@ router.post("/", async (req, res) => {
   });
 
   try {
-    await user.saveCustom();
-    res.status(200).send(user);
+    const savedUser = await user.signUp();
+    res.status(200).send(savedUser);
   } catch (err) {
     console.log(err);
     let message = err.message;
