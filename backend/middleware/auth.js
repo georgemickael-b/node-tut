@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const SECRET_KEY = "SOMETAkdjfhgkjfdhgkjfdghk";
+const SECRET_KEY = process.env.AUTH_SECRET_KEY;
 const jwt = require("jsonwebtoken");
 
 async function auth(req, res, next) {

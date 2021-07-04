@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const e = require("express");
 const jwt = require("jsonwebtoken");
 const saltRounds = 10;
-const SECRET_KEY = "SOMETAkdjfhgkjfdhgkjfdghk";
+const SECRET_KEY = process.env.AUTH_SECRET_KEY;
 
 const userSchema = mongoose.Schema({
   email: {
@@ -51,8 +50,11 @@ userSchema.statics.signIn = async function (email, password) {
     "password",
   ]);
 
+  console.log("user", user);
+
   if (user) {
     const result = await bcrypt.compare(password, user.password);
+    console.log(result);
     if (result === true) {
       const token = jwt.sign({ email: user.email }, SECRET_KEY, {
         expiresIn: "1h",

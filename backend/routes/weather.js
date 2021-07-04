@@ -14,7 +14,8 @@ router.get("/", async (req, res) => {
     const url =
       "http://api.openweathermap.org/data/2.5/weather?q=" +
       city +
-      "&appid=6195b3e14e9b8abc362ce243d2df7105";
+      "&appid=" +
+      proces.env.OPEN_WEATHER_API_TOKEN;
     const result = await axios.get(url);
     res.status(200).send(result.data);
   } catch (err) {

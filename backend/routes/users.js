@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const { validationResult, body } = require("express-validator");
+const userCreationValidator = require("../validators/userCreationValidator");
+const checkValidationErrors = require("../helpers/checkValidationErrors");
 
 router.post("/signin", async (req, res) => {
   const data = req.body;
@@ -26,7 +29,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", checkValidationErrors, async (req, res) => {
   const data = req.params;
   try {
     //const user = await User.findOne({_id:data.userId })
@@ -38,10 +41,10 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", userCreationValidator, async (req, res) => {
   // email , password, firstname , last, age
   const data = req.body;
-
+  console.log(data);
   const user = new User({
     email: data.email,
     password: data.password,
@@ -55,12 +58,7 @@ router.post("/", async (req, res) => {
     const savedUser = await user.signUp();
     res.status(200).send(savedUser);
   } catch (err) {
-    console.log(err);
-    let message = err.message;
-    if (err.code === 11000) {
-      message = "Email is already registered.";
-    }
-    res.status(500).send({ message: message });
+    res.status(500).send({ message: "Something went wrong!" });
   }
 });
 
